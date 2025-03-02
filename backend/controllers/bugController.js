@@ -133,38 +133,38 @@ exports.updateBugStatus = async (req, res) => {
 
 
 
-// exports.getQABugs = async (req, res) => {
-//   const qaId = req.session.user?.id;
+exports.getQABugs = async (req, res) => {
+  const qaId = req.session.user?.id;
 
-//   try {
-//     if (!qaId) {
-//       return res.status(401).json({ error: "User not authenticated" });
-//     }
-//     console.log("QA Session User ID:", qaId); // Debug: Log QA ID
-//     console.log("QA Bugs Query:", { createdBy: mongoose.Types.ObjectId.createFromHexString(qaId) }); // Debug: Log query
+  try {
+    if (!qaId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+    console.log("QA Session User ID:", qaId); // Debug: Log QA ID
+    console.log("QA Bugs Query:", { createdBy: mongoose.Types.ObjectId.createFromHexString(qaId) }); // Debug: Log query
 
-//     const bugs = await Bug.find({ createdBy: mongoose.Types.ObjectId.createFromHexString(qaId) })
-//       .populate({
-//         path: "assignedTo",
-//         select: "name email",
-//         model: "User",
-//       })
-//       .populate({
-//         path: "projectId",
-//         select: "name",
-//         model: "Project",
-//       })
-//       .sort({ updatedAt: -1 }); // Sort by most recent
-//     console.log("QA Bugs Found:", bugs); // Debug: Log bugs found
+    const bugs = await Bug.find({ createdBy: mongoose.Types.ObjectId.createFromHexString(qaId) })
+      .populate({
+        path: "assignedTo",
+        select: "name email",
+        model: "User",
+      })
+      .populate({
+        path: "projectId",
+        select: "name",
+        model: "Project",
+      })
+      .sort({ updatedAt: -1 }); // Sort by most recent
+    console.log("QA Bugs Found:", bugs); // Debug: Log bugs found
 
-//     if (!bugs.length) {
-//       return res.status(200).json({ message: "No bugs created yet", bugs: [] });
-//     }
-//     res.status(200).json({ bugs });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
+    if (!bugs.length) {
+      return res.status(200).json({ message: "No bugs created yet", bugs: [] });
+    }
+    res.status(200).json({ bugs });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 
@@ -261,96 +261,60 @@ exports.updateBugStatus = async (req, res) => {
 //   }
 // };
 
+
+
 // new code 2.0
-exports.getQABugs = async (req, res) => {
-  const qaId = req.session.user?.id;
-
-  try {
-    console.log("Entering getQABugs - Request URL:", req.url, "Session:", req.session.user); // Debug: Log request and session
-    if (!qaId) {
-      console.log("No QA ID - User not authenticated, Session:", req.session); // Debug: Log session on early exit
-      return res.status(401).json({ error: "User not authenticated" });
-    }
-    console.log("QA Session User ID Type:", typeof qaId, "Value:", qaId); // Debug: Log type and value
-    console.log("QA Bugs Query Before Conversion:", { createdBy: qaId }); // Debug: Log raw query
-
-    // Convert qaId to ObjectId explicitly
-    const qaObjectId = mongoose.Types.ObjectId.createFromHexString(qaId);
-    console.log("QA ObjectId After Conversion:", qaObjectId); // Debug: Log converted ObjectId
-
-    const bugs = await Bug.find({ createdBy: qaObjectId })
-      .populate("assignedTo", "name email")
-      .populate("projectId", "name")
-      .sort({ updatedAt: -1 }); // Sort by most recent
-
-    console.log("QA Bugs Found:", bugs); // Debug: Log bugs found
-
-    if (!bugs.length) {
-      return res.status(200).json({ message: "No bugs created yet", bugs: [] });
-    }
-    res.status(200).json({ bugs }); // Ensure valid JSON response
-  } catch (error) {
-    console.error("Error in getQABugs:", error.message, "Stack:", error.stack); // Debug: Log full error
-    if (error.name === "CastError" || error.name === "InvalidObjectIdError") {
-      console.error("ObjectId Conversion Error:", error.message);
-      return res.status(400).json({ error: "Invalid user ID format" });
-    }
-    res.status(500).json({ error: "Server error: " + error.message }); // Ensure JSON error response
-  }
-};
-
-// exports.getDevBugs = async (req, res) => {
-//   const devId = req.session.user?.id;
-//   console.log("Dev ID Type:", typeof devId, "Value:", devId);
+// exports.getQABugs = async (req, res) => {
+//   const qaId = req.session.user?.id;
 
 //   try {
-//     if (!devId) {
+//     console.log("Entering getQABugs - Request URL:", req.url, "Session:", req.session.user); // Debug: Log request and session
+//     if (!qaId) {
+//       console.log("No QA ID - User not authenticated, Session:", req.session); // Debug: Log session on early exit
 //       return res.status(401).json({ error: "User not authenticated" });
 //     }
-//     console.log("Dev Session User ID:", devId); // Debug: Log Dev ID
-//     console.log("Dev Bugs Query:", { assignedTo: mongoose.Types.ObjectId.createFromHexString(devId) }); // Debug: Log query
+//     console.log("QA Session User ID Type:", typeof qaId, "Value:", qaId); // Debug: Log type and value
+//     console.log("QA Bugs Query Before Conversion:", { createdBy: qaId }); // Debug: Log raw query
 
-//     const bugs = await Bug.find({ assignedTo: mongoose.Types.ObjectId.createFromHexString(devId) })
-//       .populate({
-//         path: "createdBy",
-//         select: "name email",
-//         model: "User",
-//       })
-//       .populate({
-//         path: "projectId",
-//         select: "name",
-//         model: "Project",
-//       })
+//     // Convert qaId to ObjectId explicitly
+//     const qaObjectId = mongoose.Types.ObjectId.createFromHexString(qaId);
+//     console.log("QA ObjectId After Conversion:", qaObjectId); // Debug: Log converted ObjectId
+
+//     const bugs = await Bug.find({ createdBy: qaObjectId })
+//       .populate("assignedTo", "name email")
+//       .populate("projectId", "name")
 //       .sort({ updatedAt: -1 }); // Sort by most recent
-//     console.log("Dev Bugs Found:", bugs); // Debug: Log bugs found
+
+//     console.log("QA Bugs Found:", bugs); // Debug: Log bugs found
 
 //     if (!bugs.length) {
-//       return res.status(200).json({ message: "No bugs assigned yet", bugs: [] });
+//       return res.status(200).json({ message: "No bugs created yet", bugs: [] });
 //     }
-//     res.status(200).json({ bugs });
+//     res.status(200).json({ bugs }); // Ensure valid JSON response
 //   } catch (error) {
-//     res.status(500).json({ error: error.message });
+//     console.error("Error in getQABugs:", error.message, "Stack:", error.stack); // Debug: Log full error
+//     if (error.name === "CastError" || error.name === "InvalidObjectIdError") {
+//       console.error("ObjectId Conversion Error:", error.message);
+//       return res.status(400).json({ error: "Invalid user ID format" });
+//     }
+//     res.status(500).json({ error: "Server error: " + error.message }); // Ensure JSON error response
 //   }
 // };
 
 
-// // new getDevBugs
+
 exports.getDevBugs = async (req, res) => {
   const devId = req.session.user?.id;
+  console.log("Dev ID Type:", typeof devId, "Value:", devId);
 
   try {
     if (!devId) {
-      console.log("No Dev ID - User not authenticated"); // Debug: Log early exit
       return res.status(401).json({ error: "User not authenticated" });
     }
-    console.log("Dev Session User ID Type:", typeof devId, "Value:", devId); // Debug: Log type and value
-    console.log("Dev Bugs Query Before Conversion:", { assignedTo: devId }); // Debug: Log raw query
+    console.log("Dev Session User ID:", devId); // Debug: Log Dev ID
+    console.log("Dev Bugs Query:", { assignedTo: mongoose.Types.ObjectId.createFromHexString(devId) }); // Debug: Log query
 
-    // Convert devId to ObjectId explicitly
-    const devObjectId = mongoose.Types.ObjectId.createFromHexString(devId);
-    console.log("Dev ObjectId After Conversion:", devObjectId); // Debug: Log converted ObjectId
-
-    const bugs = await Bug.find({ assignedTo: devObjectId })
+    const bugs = await Bug.find({ assignedTo: mongoose.Types.ObjectId.createFromHexString(devId) })
       .populate({
         path: "createdBy",
         select: "name email",
@@ -362,7 +326,6 @@ exports.getDevBugs = async (req, res) => {
         model: "Project",
       })
       .sort({ updatedAt: -1 }); // Sort by most recent
-
     console.log("Dev Bugs Found:", bugs); // Debug: Log bugs found
 
     if (!bugs.length) {
@@ -370,11 +333,52 @@ exports.getDevBugs = async (req, res) => {
     }
     res.status(200).json({ bugs });
   } catch (error) {
-    console.error("Error in getDevBugs:", error.message);
-    if (error.name === "CastError" || error.name === "InvalidObjectIdError") {
-      console.error("ObjectId Conversion Error:", error.message);
-      return res.status(400).json({ error: "Invalid user ID format" });
-    }
     res.status(500).json({ error: error.message });
   }
 };
+
+
+// // new getDevBugs 1
+// exports.getDevBugs = async (req, res) => {
+//   const devId = req.session.user?.id;
+
+//   try {
+//     if (!devId) {
+//       console.log("No Dev ID - User not authenticated"); // Debug: Log early exit
+//       return res.status(401).json({ error: "User not authenticated" });
+//     }
+//     console.log("Dev Session User ID Type:", typeof devId, "Value:", devId); // Debug: Log type and value
+//     console.log("Dev Bugs Query Before Conversion:", { assignedTo: devId }); // Debug: Log raw query
+
+//     // Convert devId to ObjectId explicitly
+//     const devObjectId = mongoose.Types.ObjectId.createFromHexString(devId);
+//     console.log("Dev ObjectId After Conversion:", devObjectId); // Debug: Log converted ObjectId
+
+//     const bugs = await Bug.find({ assignedTo: devObjectId })
+//       .populate({
+//         path: "createdBy",
+//         select: "name email",
+//         model: "User",
+//       })
+//       .populate({
+//         path: "projectId",
+//         select: "name",
+//         model: "Project",
+//       })
+//       .sort({ updatedAt: -1 }); // Sort by most recent
+
+//     console.log("Dev Bugs Found:", bugs); // Debug: Log bugs found
+
+//     if (!bugs.length) {
+//       return res.status(200).json({ message: "No bugs assigned yet", bugs: [] });
+//     }
+//     res.status(200).json({ bugs });
+//   } catch (error) {
+//     console.error("Error in getDevBugs:", error.message);
+//     if (error.name === "CastError" || error.name === "InvalidObjectIdError") {
+//       console.error("ObjectId Conversion Error:", error.message);
+//       return res.status(400).json({ error: "Invalid user ID format" });
+//     }
+//     res.status(500).json({ error: error.message });
+//   }
+// };
